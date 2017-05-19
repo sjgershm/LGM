@@ -7,12 +7,12 @@ function [P, pz, Z] = LGM(C,v,alpha)
     % INPUTS:
     %   C - [M x N] matrix of choices for M agents on N trials. Indicate
     %       missing data with nan.
-    %   v - [1 x N] vector indicating the number of choice options on each trial.
+    %   v - number of choice options on each trial.
     %   alpha (optional) - scalar or vector of concentration parameters (if a
     %                      vector, the model will marginalize over the values). Default: linspace(1e-5,10,6)
     %
     % OUTPUTS:
-    %   P - [K x V] matrix of choice probabilities for K missing choices over V options.
+    %   P - [M x N x V] matrix of choice probabilities for K missing choices over V options.
     %   pz - posterior probability of each partition
     %   Z - set of partitions
     %
@@ -20,14 +20,13 @@ function [P, pz, Z] = LGM(C,v,alpha)
     
     % initialization
     [M,N] = size(C);
-    if nargin < 2; v = zeros(1,N)+2; end
     Z = SetPartition(M);
     g = 1;
     if nargin < 3 || isempty(alpha)
         alpha = linspace(1e-5,10,6);
     end
     A = length(alpha);
-    q = []; P = [];
+    q = zeros(length(Z),M,N,v);
     
     % construct prior
     logp = zeros(length(Z),A);
@@ -38,6 +37,7 @@ function [P, pz, Z] = LGM(C,v,alpha)
         
         % compute prior
         z = zeros(M,1);
+        T = zeros(1,length(K));
         for k = 1:K
             z(h{k}) = k;
             T(k) = length(h{k});
@@ -52,8 +52,8 @@ function [P, pz, Z] = LGM(C,v,alpha)
             ix = ~isnan(C(:,n));
             for k = 1:K
                 f = double(z(ix)==k);
-                logp(j,:) = logp(j,:) + gammaln(v(n)*g) - gammaln(sum(f)+g*v(n));
-                for c = 1:v(n)
+                logp(j,:) = logp(j,:) + gammaln(v*g) - gammaln(sum(f)+g*v);
+                for c = 1:v
                     L(k,c,n) = sum(f.*(C(ix,n)==c));
                     logp(j,:) = logp(j,:) + gammaln(g + L(k,c,n)) - gammaln(g);
                 end
@@ -61,11 +61,9 @@ function [P, pz, Z] = LGM(C,v,alpha)
         end
         
         % predictive probability
-        i = 0;
         for n = 1:N
             for m = 1:M
-                i = i + 1;
-                q(j,i,:) = (g + L(z(m),:,n))./(g*v(n) + sum(L(z(m),:,n)));
+                q(j,m,n,:) = (g + L(z(m),:,n))./(g*v + sum(L(z(m),:,n)));
             end
         end
     end
@@ -75,11 +73,9 @@ function [P, pz, Z] = LGM(C,v,alpha)
     
     % choice probabilities for missing trials
     if ~isempty(q)
-        P = zeros(size(q,2),size(q,3));
+        P = zeros(M,N,v);
         for j = 1:length(Z)
-            Q = squeeze(q(j,:,:));
-            if ~all(size(Q)==size(P)); Q = Q'; end
+            Q = squeeze(q(j,:,:,:));
             P = P + pz(j)*Q;
         end
-        if size(P,1)==1; P = P'; end
     end

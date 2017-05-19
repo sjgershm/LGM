@@ -72,10 +72,8 @@ function [P, pz, Z] = LGM(C,v,alpha)
     pz = sum(pz,2);                     % marginalize over alpha
     
     % choice probabilities for missing trials
-    if ~isempty(q)
-        P = zeros(M,N,v);
-        for j = 1:length(Z)
-            Q = squeeze(q(j,:,:,:));
-            P = P + pz(j)*Q;
-        end
+    P = zeros(M,N,v);
+    for j = 1:length(Z)
+        Q = squeeze(q(j,:,:,:));
+        P = P + pz(j)*Q;
     end

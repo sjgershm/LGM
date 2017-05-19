@@ -12,7 +12,7 @@ function [P, pz, Z] = LGM(C,v,alpha)
     %                      vector, the model will marginalize over the values). Default: linspace(1e-5,10,6)
     %
     % OUTPUTS:
-    %   P - [M x N x V] matrix of choice probabilities for K missing choices over V options.
+    %   P - [M x N x V] matrix of choice probabilities
     %   pz - posterior probability of each partition
     %   Z - set of partitions
     %

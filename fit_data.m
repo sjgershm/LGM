@@ -5,8 +5,8 @@ function [probs,beta] = fit_data(choices,P)
     % USAGE: [probs,beta] = fit_data(choices)
     %
     % INPUTS:
-    %   choices - [K x 1] choices for K trials
-    %   P - model choice probabilities
+    %   choices - [N x 1] choices for N trials
+    %   P - [N x V] model choice probabilities
     %
     % OUTPUTS:
     %   probs - predicted choice probabilities
@@ -18,10 +18,11 @@ function [probs,beta] = fit_data(choices,P)
     L = -inf;
     
     for i = 1:length(B)
-        p = (P.^B(i))./sum(P.^B(i));
+        p = P.^B(i);
+        p = bsxfun(@rdivide,p,sum(p,2));
         loglik = 0;
-        for k = 1:length(choices)
-            loglik = loglik + log(p(choices(k)));
+        for n = 1:length(choices)
+            loglik = loglik + log(p(n,choices(n)));
         end
         if loglik > L
             probs = p;

@@ -71,7 +71,7 @@ function [P, pz, Z] = LGM(C,v,alpha)
     pz = exp(logp-logsumexp(logp(:)));  % normalize prior
     pz = sum(pz,2);                     % marginalize over alpha
     
-    % choice probabilities for missing trials
+    % choice probabilities
     P = zeros(M,N,v);
     for j = 1:length(Z)
         Q = squeeze(q(j,:,:,:));

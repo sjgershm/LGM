@@ -11,4 +11,4 @@ function logp = crp_logprob(T,alpha)
     K = length(T);
     N = sum(T);
     
-    logp = K*log(alpha) + sum(gammaln([T alpha])); - gammaln(N+alpha);
+    logp = K*log(alpha) + sum(gammaln([T alpha])) - gammaln(N+alpha);
